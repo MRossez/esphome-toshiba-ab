@@ -8,6 +8,8 @@
 #include <HardwareSerial.h>
 #endif
 
+#undef word
+
 
 namespace esphome {
 namespace toshiba_ab {
