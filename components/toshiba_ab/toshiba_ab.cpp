@@ -4208,9 +4208,11 @@ void ToshibaAbClimate::send_estia_first_gen_zone1_mode(climate::ClimateMode mode
   if (this->read_only_) return;
   if (mode != climate::CLIMATE_MODE_HEAT && mode != climate::CLIMATE_MODE_COOL && mode != climate::CLIMATE_MODE_AUTO)
     return;
-  this->send_estia_first_gen_auto_mode(mode == climate::CLIMATE_MODE_AUTO);
+  const bool want_auto = mode == climate::CLIMATE_MODE_AUTO;
+  if (want_auto != this->estia_first_gen_auto_mode_active_)
+    this->send_estia_first_gen_auto_mode(want_auto);
   // Confirmed wall-remote captures in issue #90: 22:05:05 = cool, 22:06:06 = heat.
-  const uint8_t mode_byte = mode == climate::CLIMATE_MODE_COOL ? 0x05 : 0x06;
+  const uint8_t mode_byte = mode == climate::CLIMATE_MODE_COOL ? 0x01 : 0x02;
   const uint8_t payload[] = {0xE0, 0x01, 0x22, mode_byte, mode_byte};
   this->send_command(make_estia_first_gen_frame(this->remote_address_, this->master_address_, payload, sizeof(payload)));
 }
@@ -4223,7 +4225,8 @@ void ToshibaAbClimate::send_estia_first_gen_zone1_setpoint(float target_temp) {
   }
   const uint8_t encoded = static_cast<uint8_t>(std::round((target_temp + 16.0f) * 2.0f));
   // Zone 1 setpoint frame tested in PR #243; retain its captured companion fields.
-  const uint8_t payload[] = {0xE0, 0x01, 0x23, 0x02, encoded, 0x66, 0xA2, encoded};
+  const bool cooling = this->zone1_climate_ != nullptr && this->zone1_climate_->mode == climate::CLIMATE_MODE_COOL;
+  const uint8_t payload[] = {0xE0, 0x01, 0x23, static_cast<uint8_t>(cooling ? 0x01 : 0x02), encoded, 0x66, 0xA2, encoded};
   this->send_command(make_estia_first_gen_frame(this->remote_address_, this->master_address_, payload, sizeof(payload)));
 }
 
