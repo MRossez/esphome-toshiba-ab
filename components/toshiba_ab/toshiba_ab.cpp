@@ -1376,7 +1376,7 @@ climate::ClimateTraits ToshibaAbEstiaZone1Climate::traits() {
   }
   traits.set_visual_min_temperature(20);
   traits.set_visual_max_temperature(this->zone_ == 2 ? 40 : 65);
-  traits.set_visual_temperature_step(0.5);
+  traits.set_visual_temperature_step(1.0);
   return traits;
 }
 
